@@ -1,0 +1,588 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>基元表征方法</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/site_media/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="/site_media/css/dashboard.css" rel="stylesheet">
+
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="//cdn.bootcss.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="//cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="/site_media/js/jquery-1.11.2.min.js"></script>
+        <script type="text/javascript" src="/site_media/js/tableExport.js"></script>
+<script type="text/javascript" src="/site_media/js/jquery.base64.js"></script>
+<script type="text/javascript" src="/site_media/js/jspdf/libs/sprintf.js"></script>
+<script type="text/javascript" src="/site_media/js/jspdf/jspdf.js"></script>
+<script type="text/javascript" src="/site_media/js/jspdf/libs/base64.js"></script>
+    <script src="/site_media/js/bootstrap.min.js"></script>
+    <script src="/site_media/js/form.js"></script>
+    <script src="/site_media/js/Chart.min.js"></script>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">基元表征方法</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a onclick= "createSample()">新建样品</a></li>
+            <li><a onclick= "createExample()">新建混合物</a></li>
+          </ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li><a onclick="createSample()">新建样品</a></li>
+            <li><a onclick="createExample()">新建混合物</a></li>
+            <li  class="active"><a href="/index/">查询</a></li>
+            <li><a href="/regression/">基元表征</a></li>
+            <li><a href="/compound/"> 混合物计算</a></li>
+          </ul>
+        </div>
+        <div id="researchMode" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">查询</h1>
+          
+
+          <div class="row placeholders">
+            <form action="/search/" method="get">
+            <div class="input-group">
+  
+                <input type="text" class="form-control" placeholder="Search for..." id="searchValue" name="searchInput" value={{searchValue}}>
+                <span class="input-group-btn">
+                  <button class="btn btn-default" type="submit" >查询</button>
+                </span>
+      
+            </div><!-- /input-group -->
+
+            </form>
+            <div>
+              <button  class="col-sm-1  btn btn-primary" onclick= "exportExcel()">导出数据</button>
+            </div>
+            <div class="" style="margin-top:20px">
+              <table id = "cofTable" class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th >#</th>
+                    <th >样品名称</th>
+                    <th >样品来源</th>
+                    <th colspan="4">工业分析(wt%)</th>
+                    <th colspan="1">元素分析(wt%)</th>
+                    <th colspan="2">热值（MJ/kg)</th>
+                    <th colspan="4">失重曲线</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                  {% for item in searchList%}
+
+                <tbody>
+                     <tr>
+                      <td scope="row" rowspan="3"></td>
+                      <td rowspan="3">{{item.name}}</td>
+                      <td rowspan="3">{{item.origin}}</td>
+                      <td colspan="4">{{item.industryType}}</td>
+                      <td colspan="1">{{item.elementType}}</td>
+                      <td colspan="2">{{item.hotType}}</td>
+                      <td colspan="4">{{item.gravityType}}</td>
+                      <td rowspan="3">                      <span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeItem(this)"></span></td>
+                    </tr>
+                    <tr>
+                      <td>水分(%)</td>
+                      <td>挥发分(%) </td>
+                      <td>固定碳(%) </td>
+                      <td>灰分(%)</td>
+                      <td>{{item.industryElementContent}}</td>
+                      <td>高位热值(MJ/Kg)</td>
+                      <td>低位热值(MJ/Kg)</td>
+                      <td>仪器</td>
+                      <td>升温速率（K/min) </td>
+                      <td>气氛</td>
+                      <td>失重数据</td>
+                    </tr>
+                    <tr>
+                      <td>{{item.water}}</td>
+                      <td>{{item.volatiles}}</td>
+                      <td>{{item.carbon}} </td>
+                      <td>{{item.ash}}</td>
+                      <td>{{item.industryScaleContent}}</td>
+                      <td>{{item.highValue}}</td>
+                      <td>{{item.lowValue}}</td>
+                      <td>{{item.reactor}}</td>
+                      <td>{{item.temperatureSpeed}}</td>
+                      <td>{{item.gas}}</td>
+                      <td><button onclick="dowloadData(this)" class="btn btn-primary" >下载</button></td>
+                    </tr>  
+                       
+                </tbody>
+                  {% endfor %}
+
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <table id ="dataTable" style="display:none">
+    </table>
+
+    <!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+	        <h4 class="modal-title" id="myModalLabel">样品参数</h4>
+	      </div>
+          <form class="form-horizontal" en id="creatSampleForm" enctype="multipart/form-data" method="POST" action="/createSample/" onsubmit=""> 
+	      <div class="modal-body">
+    			  <div class="form-group">
+    			    <label class="col-sm-2 control-label">名称</label>
+    			    <div class="col-sm-10">
+    			      <input type="text" class="form-control" name="name" placeholder="名称" required>
+    			    </div>
+    			  </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">样品来源</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" name="origin" placeholder="来源" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="元素分析" class="col-sm-2 control-label">工业分析(wt%)</label>
+              <div class="col-sm-7">
+                <select class="form-control" name="industryType">
+                  <option>收到基</option>
+                  <option>空干基</option>
+                  <option>干燥基</option>
+                </select>
+              </div>
+            </div>
+    			  <div class="form-group" id="industryCompose">
+              <div class="col-sm-offset-2 col-sm-2">
+                <input type="text" class="form-control" name="water" pattern="(^(\d*\.)?\d+$)" placeholder="水分" required/ >
+              </div>
+              <div class=" col-sm-2">
+                <input type="text" class="form-control" name="volatiles" pattern="(^(\d*\.)?\d+$)" placeholder="挥发分" required/ >
+              </div>
+               <div class=" col-sm-2">
+                <input type="text" class="form-control" name="carbon"  pattern="(^(\d*\.)?\d+$)" placeholder="固定碳"required / >
+              </div>
+               <div class=" col-sm-2">
+                <input type="text" class="form-control" name="ash" pattern="(^(\d*\.)?\d+$)" placeholder="灰分" required>
+              </div>
+    			  </div>
+
+            <div class="form-group">
+              <label for="元素分析" class="col-sm-2 control-label">元素分析(wt%)</label>
+              <div class="col-sm-7">
+                <select class="form-control" name="elementType" >
+                  <option>收到基</option>
+                  <option>空干基</option>
+                  <option>干燥无灰基</option>
+                </select>
+              </div>
+              <input type="text" id="industryElementContent" name="industryElementContent" style="display:none">
+              <input type="text" id="industryScaleContent" name="industryScaleContent" style="display:none">
+              <button type="button" class ="col-sm-offset-1 col-sm-1 btn btn-primary" onclick="addIndustryElement(this)">add</button>
+            </div>
+            <div id="industryElementCompose">
+              <div class = "form-group" >
+                  <div class="col-sm-offset-2 col-sm-3">
+                  <input class="form-control" type="text" value="C" disabled>
+                  </div>
+                  <div class="col-sm-3">
+                  <input class="form-control" type="text" pattern="(^(\d*\.)?\d+$)" required>
+                  </div>
+                  <span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span>
+                </div>
+              <div class = "form-group" >
+                  <div class="col-sm-offset-2 col-sm-3">
+                  <input class="form-control" type="text" value="H" disabled>
+                  </div>
+                  <div class="col-sm-3">
+                  <input class="form-control" type="text" pattern="(^(\d*\.)?\d+$)" required>
+                  </div>
+                  <span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span>
+                </div>
+              <div class = "form-group" >
+                  <div class="col-sm-offset-2 col-sm-3">
+                  <input class="form-control" type="text" value="O" disabled>
+                  </div>
+                  <div class="col-sm-3">
+                  <input class="form-control" type="text" pattern="(^(\d*\.)?\d+$)" required>
+                  </div>
+                  <span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span>
+                </div>
+              <div class = "form-group" >
+                  <div class="col-sm-offset-2 col-sm-3">
+                  <input class="form-control" type="text" value="N" disabled>
+                  </div>
+                  <div class="col-sm-3">
+                  <input class="form-control" type="text"  pattern="(^(\d*\.)?\d+$)" required>
+                  </div>
+                  <span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span>
+                </div>
+              <div class = "form-group" >
+                  <div class="col-sm-offset-2 col-sm-3">
+                  <input class="form-control" type="text" value="S" disabled>
+                  </div>
+                  <div class="col-sm-3">
+                  <input class="form-control" type="text"  pattern="(^(\d*\.)?\d+$)" required>
+                  </div>
+                  <span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span>
+                </div>
+              <div class = "form-group">
+                  <div class="col-sm-offset-2 col-sm-3">
+                  <input class="form-control" type="text" value="Cl" disabled>
+                  </div>
+                  <div class="col-sm-3">
+                  <input class="form-control" type="text"  pattern="(^(\d*\.)?\d+$)" required>
+                  </div>
+                  <span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span>
+                </div>
+
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">热值</label>
+              <div class="col-sm-7">
+                <select class="form-control" name="hotType">
+                  <option>收到基</option>
+                  <option>空干基</option>
+                  <option>干燥基</option>
+                </select>
+              </div>
+            </div>
+            <div class = "form-group">
+                <div class="col-sm-offset-2 col-sm-3">
+                <input class="form-control" type="text" name="highValue" placeholder="高位热值(MJ/Kj)" pattern="(^(\d*\.)?\d+$)" >
+                </div>
+                <div class="col-sm-3">
+                <input class="form-control" type="text" name="lowValue" placeholder="低位热值(MJ/Kg)" pattern="(^(\d*\.)?\d+$)" >
+                </div>
+
+              </div>
+    			  <div class="form-group">
+    			    <label class="col-sm-2 control-label">失重曲线</label>
+              <div class="col-sm-7">
+                <select class="form-control" name="gravityType" >
+                  <option>收到基</option>
+                  <option>空干基</option>
+                  <option>干燥基</option>
+                </select>
+              </div>     	 
+            </div>
+
+            <div id="GravityCurve">
+              <div class="form-group" id="" style="">
+                <label class="col-sm-2 control-label" >反应器 : </label>
+                <div class="col-sm-2">
+                  <input name="reactor" class="form-control" type="text" placeholder="反应器" required> 
+                </div>
+                <label class="col-sm-2 control-label" style="text-align:left">升温速率(K/min) : </label>
+                <div class="col-sm-2">
+                  <input class="form-control" name="temperatureSpeed" type="text" pattern="(^(\d*\.)?\d+$)" placeholder="升温速率" required > 
+                </div>
+                <label class="col-sm-2 control-label" style="text-align:left">气氛 :</label>
+                <div class="col-sm-2">
+                 <select class="form-control" name="gas"onchange="addCustomerStyle(this)">
+                  <option>Air</option> 
+                  <option>N2</option>
+                  <option>O2</option>
+                  <option>CO2</option> 
+                  <option>H2O</option>  
+                  <option>自定义</option>
+                  </select>    
+                  <input class="form-control" placeholder="自定义" style="display:none" onblur="addCustSelect(this)">
+                </div>                  
+              </div>
+              <div class="form-group">
+               <label class="col-sm-2 control-label" >失重数据 : </label>
+                <div class="col-sm-7">
+                  <input name="gravityData" class="form-control" type="file" required> 
+                </div>
+              </div>
+            </div>
+	      </div>
+
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	        <input id="SubmitFormSample" type="submit" class="btn btn-primary" value="Save">
+	      </div>
+           </form>
+
+	    </div>
+	  </div>
+	</div>
+  <div class="modal fade" id="CreatCompoundModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">新建混合物</h4>
+        </div>  
+          <form class="form-horizontal" action="/addCompound/" onsubmit="addCompund()" method="POST">
+          <div class="modal-body" >
+            <div class="form-group">
+              <label class="col-sm-3 control-label">混合物名称</label>
+              <div class="col-sm-offset-1 col-sm-7">
+                <input type="text" name="compoundName" class="form-control">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-2 control-label">样本</label>
+              <div class="col-sm-2">
+                <select class="form-control" id="sampleName" >
+                  {% for item in sampleList%}
+                  <option>{{item}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <label class="col-sm-2 control-label">质量比例</label>
+              <div class="col-sm-3">
+               <input type="text" class="form-control" id="sampleSacle"  pattern="(^(\d*\.)?\d+$)" >
+              </div>
+              <label class="col-sm-1 control-label">%</label>
+              <button type="button" class=" btn-primary" onclick="addNew(this)">增加 </button>
+              <!-- <div class="col-sm=1 control">%</div> -->
+            </div>
+            <div id="SampleBody">
+            </div>
+            <input style="display:none" id="compundContent" name="compundContent" type="text">         
+            <input style="display:none" id="compundScale" name="compundScale" type="text">
+          </div>
+          <div class="modal-footer">
+            <input type="button" class="btn btn-default" data-dismiss="modal" value="Close">
+            <input type="submit" class="btn btn-primary" value="Save">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+
+    <script>
+    {%ifequal state "failed"%}
+      alert("物品名称重复")
+    {% endifequal  %}
+    function removeItem(argument){
+      var name = $(argument).parent().siblings('td')[1].innerText;
+      $.post('/removeItem/',{"name":name},function(data){
+        if(data.state=="success"){
+         $(argument).parent().parent().parent().remove();
+        }
+      });
+    }
+    function createSample(){
+    	$("#myModal").modal();
+    }
+    function createExample(){
+      $("#CreatCompoundModal").modal();
+    }
+    // $("#SubmitFormSample").blind("submit");
+    function addIndustryElement(argument){
+       $this = $(argument);
+      // alert("this");
+      var htmlStr = '<div class = "form-group" > <div class="col-sm-offset-2 col-sm-3"><input class="form-control" type="text" placeholder="元素"></div><div class="col-sm-3"><input class="form-control" type="text" placeholder="比例" pattern="(^(\d*\.)?\d+$)"  ></div><span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span></div>'
+      $("#industryElementCompose").append(htmlStr);
+      // console.log($("#ElementCompose").children(".control-label")[0].textContent);
+
+    }
+    function addCustomerStyle(argument){
+      // $this = $(argument);
+      $this = $(argument);
+
+      var selectedValue = $this.children("option:selected").text();
+      console.log(selectedValue);
+      var cust = "自定义";
+      console.log(cust);
+      if(selectedValue == "自定义")
+      {
+        $this.css("display","none");
+        $this.siblings("input").css("display","block");
+      }
+      // $this.parent().append()
+    }
+    function addCustSelect(argument) {
+      // body...
+      $this = $(argument);
+      $this.css("display","none");
+      var select = $this.siblings("select");
+      var optionStr = '<option>' + $this.val() + '</option>';
+      select.append(optionStr);
+      select.css("display","block");
+      select.val($this.val());
+    }
+    function removeCust(argument)
+    {
+      $this = $(argument);
+      $this.parent().remove();
+    }
+    function addNew(argument){
+      var element = $("#sampleName").val();
+      var scale = $("#sampleSacle").val();
+      var htmlStr = '<div class="form-group"><div class="col-sm-offset-2 col-sm-2"><input class="form-control" placeholder="元素" value="'+element+'" disabled></div><div class="col-sm-offset-2 col-sm-3"><input type="text" class="form-control" placeholder="比例" value="'+scale+'" disabled></div> <label class="col-sm-1 control-label">%</label><span class="glyphicon glyphicon-remove-sign" aria-hidden="true" onclick="removeCust(this)"></span></div>';
+      $("#SampleBody").append(htmlStr);
+    }
+    function extractInfo(argument)
+    {
+      var elements = new Array();
+      var sacles = new Array();
+      $("#"+argument+"").children(".form-group").each(function(){
+        var element = $(this).children("div").children("input").get(0).value;
+        var scale = $(this).children("div").children("input").get(1).value;
+        elements.push(element);
+        sacles.push(scale);
+      });
+      return {"elements":elements,"scales":sacles};
+    }
+    function validIndustry(){
+      var number;
+      number = 0;
+      $("#industryCompose").children("div").each(function (argument) {
+        // body...
+        number = number + Number($(this).children("input").val());
+      })
+      return number;
+    }
+
+    $("#creatSampleForm").on("submit",function(e){
+     // e.preventDefault();
+      event.preventDefault();
+      var industryElements;
+      var industryScales;
+      var result = extractInfo("industryElementCompose");
+      industryElements = result["elements"];
+      industryScales = result["scales"];
+      var indNumber = 0;
+      for(var i = 0; i < industryScales.length; i++)
+      {
+        indNumber +=Number(industryScales[i]);
+      }
+
+      // console.log('"idnumber"'+indNumber);
+      if(indNumber != 100)
+      {
+        alert("元素比例相加不为100%");
+        return ;
+      }
+      if(validIndustry() != 100){
+        alert("工业分析相加不为100%");
+        return ;
+      }
+      console.log(validIndustry());
+      $("#industryElementContent").val(industryElements.join(','));
+      $("#industryScaleContent").val(industryScales.join(','));
+      $(this).ajaxSubmit({
+        type:"post",
+        data:$(this).serialize(),
+        success:function (data) {
+          // body...
+          $("#myModal").modal('toggle');
+          window.location.reload();
+          if(data.state == 'success')
+            alert('success')
+        },
+        error:function(data){
+          $("#myModal").modal('toggle');
+        }
+      })
+    });
+
+   function exportExcel(){
+      $("#cofTable").tableExport({type:'excel',escape:'false'});
+    } 
+
+    function addE (argument) {
+      // body...
+      var ESample= new Array();   
+      $("#ESample").children('input').each(function(){
+        if(this.checked==true){
+          ESample.push(1);
+        }
+        else{
+          ESample.push(0);
+        }
+      });
+      $(argument).children('div').children('input[name="ESamples"]').get(0).value = ESample.join(',');
+    }
+
+    function addCompund()
+    {
+      var result = extractInfo("SampleBody");
+      $("#compundContent").val(result["elements"]);
+
+      $("#compundScale").val(result["scales"]);
+      var industryScales = result['scales'];
+      var indNumber = 0;
+      for(var i = 0; i < industryScales.length; i++)
+      {
+        indNumber +=Number(industryScales[i]);
+      }
+
+      // console.log('"idnumber"'+indNumber);
+      if(indNumber != 100)
+      {
+        alert("元素比例相加不为100%");
+        event.preventDefault();
+        return ;
+      }
+           // console.log(result);
+    }
+    function dowloadData(argument){
+     var name = $($(argument).parent("td").parent("tr").siblings("tr")[0]).children("td")[1].innerText;
+     $.post("/getData/",{"name":name},function(data){
+        $("#dataTable").empty();
+        var htmlStr = "<tbody>";
+        for(var i = 0; i < data.result.length; i++){
+          htmlStr+="<tr>"
+          for(var j = 0; j < data.result[i].length; j++){
+            htmlStr+="<td>" + data.result[i][j] + "</td>";
+          }
+          htmlStr +="</tr>"
+        }
+        htmlStr+="</tbody>"
+        $("#dataTable").append(htmlStr);
+        $("#dataTable").css("display","block");
+       $("#dataTable").tableExport({type:'excel',escape:'false'});
+        // $("#dataTable").tableExport({type:"excel",escape:"false"});
+        $("#dataTable").css("display","none");
+     });
+    }
+
+
+    </script> 
+  </body>
+</html>
